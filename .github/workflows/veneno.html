@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>VENENO SNEAKERS | Letal Streetwear</title>
+    
+    <!-- ============================================================ -->
+    <!-- FUENTES: Mejoradas para legibilidad + vibra agresiva -->
+    <!-- ============================================================ -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <!-- ============================================================ -->
+    <!-- THREE.JS (Versión moderna para mejor compatibilidad) -->
+    <!-- ============================================================ -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js"
+            }
+        }
+    </script>
+    
+    <style>
+        /* ============================================================ */
+        /* RESET Y VARIABLES - FONDO MÁS VISIBLE */
+        /* ============================================================ */
+        :root {
+            --negro-profundo: #0a0a0a;
+            --gris-peltre: #1e1e1e;
+            --plata-metalico: #c0c0c0;
+            --blanco-rompedor: #f5f5f5;
+            --rojo-veneno: #e63946;
+            --gris-escama: #2d2d2d;
+            --gris-tarjeta: #252525;
+            --texto-claro: #e0e0e0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0d0d;
+            color: var(--texto-claro);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* ============================================================ */
+        /* CANVAS PARA EL FONDO ANIMADO DE PIEL DE SERPIENTE */
+        /* ============================================================ */
+        #fondo-mamba {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* ============================================================ */
+        /* CONTENEDOR PRINCIPAL */
+        /* ============================================================ */
+        #contenido-principal {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ============================================================ */
+        /* PANTALLA DE ENTRADA (ENTER) - CON LOGO 3D TEXTO "VENENO" */
+        /* ============================================================ */
+        #pantalla-enter {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #contenedor-logo-3d {
+            width: 380px;
+            height: 380px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 30px rgba(230, 57, 70, 0.6));
+        }
+
+        .boton-enter {
+            font-family: 'Anton', sans-serif;
+            font-size: 42px;
+            letter-spacing: 6px;
+            color: var(--plata-metalico);
+            background: transparent;
+            border: 2px solid var(--plata-metalico);
+            padding: 15px 55px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .boton-enter:hover {
+            color: var(--rojo-veneno);
+            border-color: var(--rojo-veneno);
+            transform: scale(1.05);
+            box-shadow: 0 0 35px rgba(230, 57, 70, 0.4);
+        }
+
+        /* ============================================================ */
+        /* REPRODUCTOR DE MÚSICA (SOLO DESDE CÓDIGO, NO PÚBLICO) */
+        /* ============================================================ */
+        #reproductor-musica {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid var(--plata-metalico);
+        }
+
+        .boton-musica {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: 2px solid var(--plata-metalico);
+            color: var(--blanco-rompedor);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .boton-musica:hover {
+            border-color: var(--rojo-veneno);
+            box-shadow: 0 0 15px rgba(230, 57, 70, 0.4);
+        }
+
+        .boton-musica.reproduciendo {
+            animation: girar-vinilo 4s linear infinite;
+            background: var(--rojo-veneno);
+        }
+
+        @keyframes girar-vinilo {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .control-volumen {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--plata-metalico);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .control-volumen::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--rojo-veneno);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* ============================================================ */
+        /* NAVEGACIÓN PRINCIPAL */
+        /* ============================================================ */
+        .navegacion {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: rgba(13, 13, 13, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--plata-metalico);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo-letras {
+            font-family: 'Anton', sans-serif;
+            font-size: 32px;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #e0e0e0, #e63946);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .menu-navegacion {
+            display: flex;
+            gap: 35px;
+            list-style: none;
+        }
+
+        .menu-navegacion a {
+            color: var(--plata-metalico);
+            text-decoration: none;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .menu-navegacion a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: var(--rojo-veneno);
+            transition: width 0.3s ease;
+        }
+
+        .menu-navegacion a:hover {
+            color: var(--rojo-veneno);
+        }
+
+        .menu-navegacion a:hover::after {
+            width: 100%;
+        }
+
+        .icono-carrito {
+            font-size: 26px;
+            color: var(--plata-metalico);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icono-carrito:hover {
+            color: var(--rojo-veneno);
+            transform: rotate(360deg);
+        }
+
+        /* ============================================================ */
+        /* HERO SECTION */
+        /* ============================================================ */
+        .hero {
+            text-align: center;
+            padding: 100px 20px 60px;
+            position: relative;
+        }
+
+        .titulo-principal {
+            font-family: 'Anton', sans-serif;
+            font-size: 130px;
+            background: linear-gradient(135deg, #ffffff, #e63946);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 8px;
+            text-shadow: 0 0 30px rgba(230, 57, 70, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .subtitulo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 6px;
+            color: var(--rojo-veneno);
+            text-transform: uppercase;
+        }
+
+        /* ============================================================ */
+        /* SECCIONES DE CATEGORÍAS - FONDO MÁS VISIBLE */
+        /* ============================================================ */
+        .categorias {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            padding: 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .categoria {
+            background: var(--gris-tarjeta);
+            border: 1px solid var(--plata-metalico);
+            padding: 45px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .categoria:hover {
+            transform: translateY(-8px);
+            border-color: var(--rojo-veneno);
+            box-shadow: 0 15px 35px rgba(230, 57, 70, 0.25);
+        }
+
+        .titulo-categoria {
+            font-family: 'Anton', sans-serif;
+            font-size: 38px;
+            letter-spacing: 3px;
+            color: var(--blanco-rompedor);
+            margin-bottom: 10px;
+        }
+
+        .categoria p {
+            color: var(--plata-metalico);
+            font-size: 16px;
+        }
+
+        /* ============================================================ */
+        /* GRID DE PRODUCTOS - TARJETAS CON FONDO VISIBLE */
+        /* ============================================================ */
+        .grid-productos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .producto {
+            background: var(--gris-tarjeta);
+            border: 1px solid #3a3a3a;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .producto:hover {
+            border-color: var(--rojo-veneno);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+        }
+
+        .imagen-producto {
+            width: 100%;
+            height: 320px;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.4s ease;
+        }
+
+        .producto:hover .imagen-producto {
+            transform: scale(1.05);
+        }
+
+        .info-producto {
+            padding: 20px;
+        }
+
+        .nombre-producto {
+            font-family: 'Anton', sans-serif;
+            font-size: 24px;
+            letter-spacing: 1px;
+            color: var(--blanco-rompedor);
+        }
+
+        .precio {
+            color: var(--rojo-veneno);
+            font-size: 22px;
+            font-weight: 800;
+            margin-top: 10px;
+        }
+
+        /* ============================================================ */
+        /* PÁGINA DE DETALLE DEL PRODUCTO */
+        /* ============================================================ */
+        .detalle-producto {
+            padding: 50px;
+            display: flex;
+            gap: 60px;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .galeria {
+            flex: 1.2;
+            min-width: 320px;
+        }
+
+        .imagen-principal {
+            width: 100%;
+            height: 500px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid var(--plata-metalico);
+            border-radius: 16px;
+        }
+
+        .miniaturas {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .miniatura {
+            width: 85px;
+            height: 85px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid var(--plata-metalico);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .miniatura:hover {
+            border-color: var(--rojo-veneno);
+            transform: scale(1.08);
+        }
+
+        .info-detalle {
+            flex: 1;
+        }
+
+        .selector-talla {
+            margin: 25px 0;
+        }
+
+        .selector-talla p {
+            margin-bottom: 12px;
+            font-weight: bold;
+            color: var(--plata-metalico);
+        }
+
+        .talla-boton {
+            background: transparent;
+            border: 1px solid var(--plata-metalico);
+            color: var(--blanco-rompedor);
+            padding: 12px 24px;
+            margin: 5px 8px 5px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            border-radius: 8px;
+        }
+
+        .talla-boton:hover,
+        .talla-boton.seleccionada {
+            background: var(--rojo-veneno);
+            border-color: var(--rojo-veneno);
+            box-shadow: 0 0 18px rgba(230, 57, 70, 0.5);
+        }
+
+        .boton-comprar {
+            background: var(--rojo-veneno);
+            color: var(--blanco-rompedor);
+            border: none;
+            padding: 16px 48px;
+            font-family: 'Anton', sans-serif;
+            font-size: 24px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 25px;
+            border-radius: 50px;
+        }
+
+        .boton-comprar:hover {
+            background: var(--blanco-rompedor);
+            color: var(--rojo-veneno);
+            transform: scale(1.02);
+        }
+
+        .boton-volver {
+            background: none;
+            border: 1px solid var(--plata-metalico);
+            color: var(--plata-metalico);
+            padding: 12px 28px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .boton-volver:hover {
+            border-color: var(--rojo-veneno);
+            color: var(--rojo-veneno);
+        }
+
+        /* ============================================================ */
+        /* SECCIONES DE TÍTULOS */
+        /* ============================================================ */
+        .titulo-seccion {
+            text-align: center;
+            font-family: 'Anton', sans-serif;
+            font-size: 65px;
+            letter-spacing: 4px;
+            padding: 40px 20px 20px;
+            background: linear-gradient(135deg, #e0e0e0, #e63946);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* ============================================================ */
+        /* RESPONSIVE */
+        /* ============================================================ */
+        @media (max-width: 768px) {
+            .categorias {
+                grid-template-columns: 1fr;
+                padding: 30px;
+            }
+            
+            .titulo-principal {
+                font-size: 65px;
+            }
+            
+            .detalle-producto {
+                flex-direction: column;
+                padding: 30px;
+            }
+            
+            .navegacion {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+
+            .grid-productos {
+                padding: 30px;
+            }
+
+            .titulo-seccion {
+                font-size: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- CANVAS FONDO PIEL DE SERPIENTE -->
+    <canvas id="fondo-mamba"></canvas>
+
+    <!-- REPRODUCTOR DE MÚSICA (SOLO CÓDIGO) -->
+    <div id="reproductor-musica">
+        <audio id="audio-element" loop preload="auto">
+            <!-- ⚠️ CAMBIA 'tu-beat.mp3' por el nombre de tu archivo de música -->
+            <source src="tu-beat.mp3" type="audio/mpeg">
+            <source src="tu-beat.wav" type="audio/wav">
+        </audio>
+        
+        <button class="boton-musica" id="boton-play">
+            ▶
+        </button>
+        
+        <input type="range" class="control-volumen" id="control-volumen" 
+               min="0" max="100" value="40">
+        
+        <button id="boton-silenciar" style="background:none; border:none; color:var(--plata-metalico); cursor:pointer; font-size:18px;">
+            🔇
+        </button>
+    </div>
+
+    <!-- PANTALLA DE ENTRADA CON LOGO 3D -->
+    <div id="pantalla-enter">
+        <div id="contenedor-logo-3d"></div>
+        <button class="boton-enter" id="btn-entrar">
+            ENTRAR AL VENENO
+        </button>
+        <p style="color:var(--plata-metalico); margin-top:25px; font-family:'Bebas Neue'; letter-spacing:3px;">
+            ⚠️ LETAL STREETWEAR ⚠️
+        </p>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="contenido-principal" style="display: none;">
+        
+        <nav class="navegacion">
+            <div class="logo-letras">VENENO</div>
+            <ul class="menu-navegacion">
+                <li><a href="#" onclick="mostrarSeccion('inicio')">INICIO</a></li>
+                <li><a href="#" onclick="mostrarSeccion('sneakers')">SNEAKERS</a></li>
+                <li><a href="#" onclick="mostrarSeccion('ropa')">ROPA</a></li>
+                <li><a href="#" onclick="mostrarSeccion('accesorios')">ACCESORIOS</a></li>
+            </ul>
+            <div class="icono-carrito" onclick="alert('🛒 Carrito VENENO - Próximamente más veneno')">
+                🛒
+            </div>
+        </nav>
+
+        <!-- SECCIÓN INICIO -->
+        <div id="seccion-inicio">
+            <div class="hero">
+                <h1 class="titulo-principal">VENENO</h1>
+                <p class="subtitulo">Sneakers For The Wild</p>
+            </div>
+            
+            <div class="categorias">
+                <div class="categoria" onclick="mostrarSeccion('sneakers')">
+                    <h2 class="titulo-categoria">SNEAKERS</h2>
+                    <p>Calzado letal - Edición limitada</p>
+                </div>
+                <div class="categoria" onclick="mostrarSeccion('ropa')">
+                    <h2 class="titulo-categoria">ROPA</h2>
+                    <p>Indumentaria salvaje</p>
+                </div>
+                <div class="categoria" onclick="mostrarSeccion('accesorios')">
+                    <h2 class="titulo-categoria">ACCESORIOS</h2>
+                    <p>Detalles venenosos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIONES DE PRODUCTOS -->
+        <div id="seccion-sneakers" style="display:none;">
+            <h2 class="titulo-seccion">SNEAKERS</h2>
+            <div class="grid-productos" id="grid-sneakers"></div>
+        </div>
+
+        <div id="seccion-ropa" style="display:none;">
+            <h2 class="titulo-seccion">ROPA</h2>
+            <div class="grid-productos" id="grid-ropa"></div>
+        </div>
+
+        <div id="seccion-accesorios" style="display:none;">
+            <h2 class="titulo-seccion">ACCESORIOS</h2>
+            <div class="grid-productos" id="grid-accesorios"></div>
+        </div>
+
+        <!-- CONTENEDOR PARA DETALLE DE PRODUCTO -->
+        <div id="contenedor-detalle" style="display:none;"></div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // ============================================================
+        // 1. LOGO 3D CON TEXTO "VENENO" (Tipo cubo giratorio)
+        // ============================================================
+        function iniciarLogoConTexto() {
+            const contenedor = document.getElementById('contenedor-logo-3d');
+            if (!contenedor) return;
+            
+            const ancho = contenedor.clientWidth;
+            const alto = contenedor.clientHeight;
+
+            const escena = new THREE.Scene();
+            const camara = new THREE.PerspectiveCamera(45, ancho / alto, 0.1, 1000);
+            camara.position.z = 3.5;
+            
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(ancho, alto);
+            renderer.setClearColor(0x000000, 0);
+            contenedor.appendChild(renderer.domElement);
+
+            // Crear textura con texto "VENENO"
+            const canvasTex = document.createElement('canvas');
+            canvasTex.width = 1024;
+            canvasTex.height = 1024;
+            const texCtx = canvasTex.getContext('2d');
+            
+            // Fondo transparente
+            texCtx.fillStyle = "#000000";
+            texCtx.fillRect(0, 0, canvasTex.width, canvasTex.height);
+            
+            // Texto principal VENENO
+            texCtx.font = "Bold 200px 'Anton', 'Bebas Neue', sans-serif";
+            texCtx.fillStyle = "#e63946";
+            texCtx.shadowBlur = 0;
+            texCtx.fillText("VENENO", 120, 520);
+            
+            // Subtítulo
+            texCtx.font = "70px 'Inter', sans-serif";
+            texCtx.fillStyle = "#c0c0c0";
+            texCtx.fillText("LETHAL", 420, 720);
+            
+            // Borde del texto principal
+            texCtx.strokeStyle = "#ffffff";
+            texCtx.lineWidth = 5;
+            texCtx.strokeText("VENENO", 120, 520);
+            
+            const texture = new THREE.CanvasTexture(canvasTex);
+            texture.anisotropy = 16;
+            
+            // Cubo con el texto
+            const geometry = new THREE.BoxGeometry(2.2, 2.2, 0.4);
+            const material = new THREE.MeshStandardMaterial({ 
+                map: texture, 
+                roughness: 0.25, 
+                metalness: 0.9,
+                color: 0xffffff,
+                emissive: 0x220000
+            });
+            const logoCube = new THREE.Mesh(geometry, material);
+            escena.add(logoCube);
+            
+            // Partículas alrededor
+            const particleGeo = new THREE.BufferGeometry();
+            const particleCount = 600;
+            const positions = new Float32Array(particleCount * 3);
+            for (let i = 0; i < particleCount; i++) {
+                positions[i*3] = (Math.random() - 0.5) * 6;
+                positions[i*3+1] = (Math.random() - 0.5) * 6;
+                positions[i*3+2] = (Math.random() - 0.5) * 4;
+            }
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMat = new THREE.PointsMaterial({ 
+                color: 0xe63946, 
+                size: 0.04, 
+                transparent: true, 
+                blending: THREE.AdditiveBlending 
+            });
+            const particles = new THREE.Points(particleGeo, particleMat);
+            escena.add(particles);
+            
+            // Luces
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+            mainLight.position.set(3, 4, 5);
+            escena.add(mainLight);
+            
+            const redLight = new THREE.PointLight(0xe63946, 0.7);
+            redLight.position.set(1.5, 1.5, 2);
+            escena.add(redLight);
+            
+            const fillLight = new THREE.AmbientLight(0x333333);
+            escena.add(fillLight);
+            
+            function animarLogo() {
+                requestAnimationFrame(animarLogo);
+                logoCube.rotation.y += 0.008;
+                logoCube.rotation.x += 0.005;
+                logoCube.rotation.z += 0.003;
+                particles.rotation.y += 0.002;
+                particles.rotation.x += 0.001;
+                redLight.intensity = 0.5 + Math.sin(Date.now() * 0.003) * 0.35;
+                renderer.render(escena, camara);
+            }
+            animarLogo();
+            
+            window.addEventListener('resize', () => {
+                const newW = contenedor.clientWidth;
+                const newH = contenedor.clientHeight;
+                camara.aspect = newW / newH;
+                camara.updateProjectionMatrix();
+                renderer.setSize(newW, newH);
+            });
+        }
+        
+        // ============================================================
+        // 2. ANIMACIÓN FONDO PIEL DE SERPIENTE
+        // ============================================================
+        const canvas = document.getElementById('fondo-mamba');
+        const ctx = canvas.getContext('2d');
+        
+        function ajustarCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        ajustarCanvas();
+        window.addEventListener('resize', ajustarCanvas);
+
+        const escamas = [];
+        const numEscamas = 180;
+        
+        class Escama {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.tamano = Math.random() * 28 + 12;
+                this.opacidad = Math.random() * 0.25 + 0.08;
+                this.fase = Math.random() * Math.PI * 2;
+                this.angulo = Math.random() * Math.PI * 2;
+            }
+            mover(mouseX, mouseY) {
+                this.x += Math.sin(Date.now() * 0.0008 + this.fase) * 0.4;
+                this.y += Math.cos(Date.now() * 0.0007 + this.fase) * 0.4;
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const distancia = Math.sqrt(dx * dx + dy * dy);
+                if (distancia < 180) {
+                    this.x += dx * 0.0012;
+                    this.y += dy * 0.0012;
+                }
+                if (this.x < -50) this.x = canvas.width + 40;
+                if (this.x > canvas.width + 50) this.x = -40;
+                if (this.y < -50) this.y = canvas.height + 40;
+                if (this.y > canvas.height + 50) this.y = -40;
+            }
+            dibujar() {
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y, this.tamano * 0.7, this.tamano * 0.45, this.angulo, 0, Math.PI * 2);
+                const gradiente = ctx.createLinearGradient(this.x - 15, this.y, this.x + 15, this.y);
+                gradiente.addColorStop(0, `rgba(180, 180, 180, ${this.opacidad})`);
+                gradiente.addColorStop(0.5, `rgba(60, 60, 60, ${this.opacidad + 0.1})`);
+                gradiente.addColorStop(1, `rgba(30, 30, 30, ${this.opacidad})`);
+                ctx.fillStyle = gradiente;
+                ctx.fill();
+                ctx.strokeStyle = `rgba(200, 200, 200, ${this.opacidad * 0.6})`;
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+            }
+        }
+
+        for (let i = 0; i < numEscamas; i++) {
+            escamas.push(new Escama());
+        }
+
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animarFondo() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0a0a0a";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            escamas.forEach(escama => {
+                escama.mover(mouseX, mouseY);
+                escama.dibujar();
+            });
+            
+            const gradienteVignette = ctx.createRadialGradient(
+                canvas.width/2, canvas.height/2, canvas.width * 0.4,
+                canvas.width/2, canvas.height/2, canvas.width * 0.8
+            );
+            gradienteVignette.addColorStop(0, 'rgba(0,0,0,0.3)');
+            gradienteVignette.addColorStop(1, 'rgba(0,0,0,0.7)');
+            ctx.fillStyle = gradienteVignette;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            requestAnimationFrame(animarFondo);
+        }
+        animarFondo();
+
+        // ============================================================
+        // 3. CONTROL DE MÚSICA (SOLO CÓDIGO)
+        // ============================================================
+        const audio = document.getElementById('audio-element');
+        const botonPlay = document.getElementById('boton-play');
+        const controlVolumen = document.getElementById('control-volumen');
+        const botonSilenciar = document.getElementById('boton-silenciar');
+        
+        // Configurar volumen inicial
+        audio.volume = 0.4;
+        
+        function toggleMusica() {
+            if (audio.paused) {
+                audio.play().catch(e => console.log("Audio necesita interacción del usuario"));
+                botonPlay.classList.add('reproduciendo');
+                botonPlay.textContent = '⏸';
+            } else {
+                audio.pause();
+                botonPlay.classList.remove('reproduciendo');
+                botonPlay.textContent = '▶';
+            }
+        }
+        
+        function cambiarVolumen() {
+            audio.volume = controlVolumen.value / 100;
+        }
+        
+        function silenciarMusica() {
+            audio.muted = !audio.muted;
+            if (audio.muted) {
+                audio.pause();
+                botonPlay.classList.remove('reproduciendo');
+                botonPlay.textContent = '▶';
+            }
+        }
+        
+        botonPlay.onclick = toggleMusica;
+        controlVolumen.oninput = cambiarVolumen;
+        botonSilenciar.onclick = silenciarMusica;
+        
+        // ============================================================
+        // 4. BASE DE DATOS DE PRODUCTOS
+        // ============================================================
+        const productos = {
+            sneakers: [
+                { nombre: "VENOM X-1", precio: "$2,499 MXN", tallas: [24, 25, 26, 27, 28, 29], imagenes: ["https://picsum.photos/id/0/500/500", "https://picsum.photos/id/1/500/500", "https://picsum.photos/id/2/500/500"] },
+                { nombre: "BLACK MAMBA PRO", precio: "$3,199 MXN", tallas: [25, 26, 27, 28, 29, 30], imagenes: ["https://picsum.photos/id/20/500/500", "https://picsum.photos/id/21/500/500", "https://picsum.photos/id/22/500/500"] },
+                { nombre: "VIPER EDITION", precio: "$2,899 MXN", tallas: [24, 25, 26, 27, 28], imagenes: ["https://picsum.photos/id/52/500/500", "https://picsum.photos/id/53/500/500"] }
+            ],
+            ropa: [
+                { nombre: "HOODIE VENENO", precio: "$1,199 MXN", tallas: ["XS", "S", "M", "L", "XL", "XXL"], imagenes: ["https://picsum.photos/id/30/500/500", "https://picsum.photos/id/31/500/500"] },
+                { nombre: "JACKET LETHAL", precio: "$2,490 MXN", tallas: ["S", "M", "L", "XL"], imagenes: ["https://picsum.photos/id/32/500/500", "https://picsum.photos/id/33/500/500"] },
+                { nombre: "TEE VENOM", precio: "$699 MXN", tallas: ["S", "M", "L", "XL"], imagenes: ["https://picsum.photos/id/34/500/500", "https://picsum.photos/id/35/500/500"] }
+            ],
+            accesorios: [
+                { nombre: "GORRA SNAKE", precio: "$699 MXN", tallas: ["Única"], imagenes: ["https://picsum.photos/id/26/500/500", "https://picsum.photos/id/27/500/500"] },
+                { nombre: "CHAIN VENOM", precio: "$899 MXN", tallas: ["Única"], imagenes: ["https://picsum.photos/id/28/500/500", "https://picsum.photos/id/29/500/500"] },
+                { nombre: "BEANIE LETHAL", precio: "$549 MXN", tallas: ["Única"], imagenes: ["https://picsum.photos/id/25/500/500"] }
+            ]
+        };
+        
+        // ============================================================
+        // 5. FUNCIONES DE UI
+        // ============================================================
+        function mostrarProductos(categoria) {
+            const grid = document.getElementById(`grid-${categoria}`);
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            productos[categoria].forEach((producto, index) => {
+                const divProducto = document.createElement('div');
+                divProducto.className = 'producto';
+                divProducto.innerHTML = `
+                    <div class="imagen-producto" style="background-image: url('${producto.imagenes[0]}')"></div>
+                    <div class="info-producto">
+                        <h3 class="nombre-producto">${producto.nombre}</h3>
+                        <p class="precio">${producto.precio}</p>
+                    </div>
+                `;
+                divProducto.onclick = () => mostrarDetalle(categoria, index);
+                grid.appendChild(divProducto);
+            });
+        }
+        
+        function mostrarDetalle(categoria, index) {
+            const producto = productos[categoria][index];
+            const contenedorDetalle = document.getElementById('contenedor-detalle');
+            
+            let htmlImagenes = `
+                <div class="galeria">
+                    <div class="imagen-principal" style="background-image: url('${producto.imagenes[0]}')"></div>
+                    <div class="miniaturas">
+            `;
+            
+            producto.imagenes.forEach((img) => {
+                htmlImagenes += `<div class="miniatura" style="background-image: url('${img}')" onclick="cambiarImagenPrincipal('${img}')"></div>`;
+            });
+            htmlImagenes += `</div></div>`;
+            
+            let htmlTallas = '<div class="selector-talla"><p>📏 SELECCIONA TALLA:</p>';
+            producto.tallas.forEach(talla => {
+                htmlTallas += `<button class="talla-boton" onclick="seleccionarTalla(this)">${talla}</button>`;
+            });
+            htmlTallas += '</div>';
+            
+            contenedorDetalle.innerHTML = `
+                <div class="detalle-producto">
+                    ${htmlImagenes}
+                    <div class="info-detalle">
+                        <h1 style="font-family:'Anton'; font-size:52px; margin-bottom:15px;">${producto.nombre}</h1>
+                        <p style="font-size:36px; color:var(--rojo-veneno); font-weight:800;">${producto.precio}</p>
+                        ${htmlTallas}
+                        <button class="boton-comprar" onclick="alert('🔥 ${producto.nombre} agregado al carrito 🔥')">
+                            AGREGAR AL CARRITO
+                        </button>
+                        <br>
+                        <button class="boton-volver" onclick="mostrarSeccion('${categoria}')">
+                            ← VOLVER A PRODUCTOS
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            contenedorDetalle.style.display = 'block';
+            document.querySelectorAll('#seccion-sneakers, #seccion-ropa, #seccion-accesorios, #seccion-inicio').forEach(sec => {
+                sec.style.display = 'none';
+            });
+        }
+        
+        window.cambiarImagenPrincipal = function(url) {
+            const imgPrincipal = document.querySelector('.imagen-principal');
+            if (imgPrincipal) imgPrincipal.style.backgroundImage = `url('${url}')`;
+        };
+        
+        window.seleccionarTalla = function(boton) {
+            document.querySelectorAll('.talla-boton').forEach(b => b.classList.remove('seleccionada'));
+            boton.classList.add('seleccionada');
+        };
+        
+        window.mostrarSeccion = function(seccion) {
+            document.querySelectorAll('#seccion-sneakers, #seccion-ropa, #seccion-accesorios, #seccion-inicio, #contenedor-detalle').forEach(sec => {
+                sec.style.display = 'none';
+            });
+            
+            if (seccion === 'inicio') {
+                document.getElementById('seccion-inicio').style.display = 'block';
+            } else {
+                const seccionDiv = document.getElementById(`seccion-${seccion}`);
+                seccionDiv.style.display = 'block';
+                mostrarProductos(seccion);
+            }
+        };
+        
+        // Inicializar productos
+        mostrarProductos('sneakers');
+        mostrarProductos('ropa');
+        mostrarProductos('accesorios');
+        
+        // Pantalla de entrada
+        document.getElementById('btn-entrar').onclick = () => {
+            const enterDiv = document.getElementById('pantalla-enter');
+            enterDiv.style.opacity = '0';
+            setTimeout(() => {
+                enterDiv.style.display = 'none';
+                document.getElementById('contenido-principal').style.display = 'block';
+                // Intentar reproducir música automáticamente
+                audio.play().catch(e => console.log("El usuario debe interactuar para reproducir música"));
+                if (botonPlay) {
+                    botonPlay.classList.add('reproduciendo');
+                    botonPlay.textContent = '⏸';
+                }
+            }, 700);
+        };
+        
+        // Cargar logo 3D
+        window.addEventListener('load', () => {
+            iniciarLogoConTexto();
+        });
+        
+        window.mostrarSeccion('inicio');
+    </script>
+</body>
+</html>
